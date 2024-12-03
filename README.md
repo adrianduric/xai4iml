@@ -1,6 +1,6 @@
 # XAug - Explanation Augmentation
 
-This repository contains code and other material related to the Explanation Augmentation: Knowledge Sharing Through Explainable Artificial Intelligence paper.
+This repository contains code and other material related to the XAug master's thesis project.
 
 ## Contents
 
