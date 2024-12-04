@@ -2,6 +2,7 @@
 from config import params
 from init_models import init_model
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
+from data_mgmt_cifar100 import prepare_data_cifar100
 from model_training import train_model
 from model_testing import test_model, test_ensemble
 from create_explanation import create_all_cams, create_average_cam, concat_all_cams
@@ -9,6 +10,7 @@ from create_graphs import create_graphs
 
 
 def run(
+        dataset_name,
         seed=params["seed"],
         model_name=None,
         model_explanation=None,
@@ -28,7 +30,8 @@ def run(
     creating Grad-CAM activation maps, and more.
 
     Args:
-        seed (int): Random seed for reproducibility.
+        dataset_name (str): The name of the dataset to be used.
+        seed (int): Random seed for reproducibility. Default is the seed set in config.py.
         model_name (str, optional): The name of the model to initialize or load. Default is None.
         model_explanation (str, optional): The name of the model providing explanations, e.g., 'densenet161'. Default is None.
         augmented_data (bool): Indicates whether to use augmented data. Default is False.
@@ -49,6 +52,7 @@ def run(
 
         # Initializing model
         model = init_model(
+            dataset_name=dataset_name,
             model_name=model_name,
             augmented_data=augmented_data,
             load_models=load_models,
@@ -57,16 +61,27 @@ def run(
         model = model.to(params["device"])
         
         # Initializing dataset
-        _, _, _, train_dataloader, val_dataloader, _ = prepare_data_hyperkvasir(
-            seed=seed,
-            augmented_data=augmented_data,
-            model_explanation=model_explanation,
-            split=True
-        )
+        if dataset_name == "hyper-kvasir":
+            _, _, _, train_dataloader, val_dataloader, _ = prepare_data_hyperkvasir(
+                seed=seed,
+                augmented_data=augmented_data,
+                model_explanation=model_explanation,
+                split=True
+            )
+        elif dataset_name == "cifar-100":
+            _, _, _, train_dataloader, val_dataloader, _ = prepare_data_cifar100(
+                seed=seed,
+                augmented_data=augmented_data,
+                model_explanation=model_explanation,
+                split=True
+            )
+        else:
+            raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
         # Perform model training
         train_metrics, val_metrics = train_model(
             seed=seed,
+            dataset_name=dataset_name,
             model=model,
             model_name=model_name,
             train_dataloader=train_dataloader,
@@ -77,6 +92,7 @@ def run(
         
         # Create graphs of training and validation metrics
         create_graphs(
+            dataset_name=dataset_name,
             model_name=model_name,
             augmented_data=augmented_data,
             train_metrics=train_metrics,
@@ -120,4 +136,4 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100", model_name="resnet152", train_models=True)

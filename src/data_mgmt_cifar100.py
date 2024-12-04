@@ -66,8 +66,8 @@ def save_cifar100_in_directory(data_root):
             os.makedirs(class_dir, exist_ok=True)
         
             # Save the image
-            img_name = f'{idx}.jpg'
-            img_path = os.path.join(class_dir, img_name)
+            img_name = str(idx)
+            img_path = os.path.join(class_dir, img_name + ".jpg")
             img.save(img_path, 'JPEG')
 
             # Write to CSV
@@ -94,7 +94,7 @@ def save_cifar100_in_directory(data_root):
     os.makedirs(test_dir, exist_ok=True)
 
     # Open CSV file for writing
-    csv_file_path = os.path.join(data_root, 'cifar-100-python/image_labels.csv')
+    csv_file_path = os.path.join(data_root, 'cifar-100-python/image-labels.csv')
     with open(csv_file_path, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(['Set (train or test)', 'Coarse Label', 'Fine Label', 'File Name'])

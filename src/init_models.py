@@ -148,12 +148,13 @@ def adapt_last_layer(model, num_classes):
         raise ValueError("Unsupported model architecture!")
 
 
-def init_model(model_name, augmented_data, load_models, num_extra_channels):
+def init_model(dataset_name, model_name, augmented_data, load_models, num_extra_channels):
     """
-    Initializes the specified model. The model is initialized either with pretrained weights, 
+    Initializes the specified model for the specified dataset. The model is initialized either with pretrained weights, 
     or loaded from a saved state dictionary, as specified by load_models.
 
     Args:
+        dataset_name (str): The name of the dataset to use the model with.
         model_name (str): The name of the model to initialize.
         augmented_data (bool): Indicates whether to load the model with additional channels for augmented data.
         load_models (bool): Flag indicating whether to load existing model parameters from a saved state dictionary.
@@ -168,14 +169,10 @@ def init_model(model_name, augmented_data, load_models, num_extra_channels):
     
     # Initializing models
     model_dict = {
-        "resnet50": lambda: resnet50(weights=ResNet50_Weights.DEFAULT),
         "resnet152": lambda: resnet152(weights=ResNet152_Weights.DEFAULT),
-        "densenet121": lambda: densenet121(weights=DenseNet121_Weights.DEFAULT),
         "densenet161": lambda: densenet161(weights=DenseNet161_Weights.DEFAULT),
         "vgg16": lambda: vgg16(weights=VGG16_Weights.DEFAULT),
         "vit_b_16": lambda: vit_b_16(weights=ViT_B_16_Weights.DEFAULT),
-        "vit_b_32": lambda: vit_b_32(weights=ViT_B_32_Weights.DEFAULT),
-        "swin_b": lambda: swin_b(weights=Swin_B_Weights.DEFAULT),
         "swin_v2_t": lambda: swin_v2_t(weights=Swin_V2_T_Weights.DEFAULT)
     }
 
@@ -194,7 +191,7 @@ def init_model(model_name, augmented_data, load_models, num_extra_channels):
     # Loading model state dicts if specified
     if load_models:
         
-        base_path = os.path.join(os.getcwd(), f"res/models/{"augmented" if augmented_data else "non-augmented"}")
+        base_path = os.path.join(os.getcwd(), f"res/models/{dataset_name}/{"augmented" if augmented_data else "non-augmented"}")
         model_path = os.path.join(base_path, model_name)
         model.load_state_dict(torch.load(model_path, weights_only=True))
 

@@ -127,12 +127,13 @@ def test_one_epoch(dataloader, model, loss_fn):
     return metric_measurements, total_loss, all_preds, all_targets
 
 
-def train_model(seed, model, model_name, train_dataloader, val_dataloader, augmented_data, save_model):
+def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dataloader, augmented_data, save_model):
     """
     Train the model for a specified number of epochs, and optionally save the model state.
 
     Args:
         seed (int): Random seed for reproducibility.
+        dataset_name (str): The name of the dataset to be used.
         model (torch.nn.Module): The model to be trained.
         model_name (str): Name of the model.
         train_dataloader (DataLoader): DataLoader for the training set.
@@ -184,7 +185,7 @@ def train_model(seed, model, model_name, train_dataloader, val_dataloader, augme
 
     # Save model
     if save_model:
-        save_path = os.path.join(os.getcwd(), f"res/models/{"augmented" if augmented_data else "non-augmented"}/{model_name}")
+        save_path = os.path.join(os.getcwd(), f"res/models/{dataset_name}/{"augmented" if augmented_data else "non-augmented"}/{model_name}")
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         torch.save(model.state_dict(), save_path)
 

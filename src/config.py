@@ -5,7 +5,7 @@ import torch
 params = {
     "seed": 77,
     "device": "cuda" if torch.cuda.is_available() else "cpu",
-    "num_classes": 23,
+    "num_classes": 100,
     "epochs": 20,
 
     # Dataset and DataLoader parameters
@@ -16,9 +16,9 @@ params = {
 
     # Model specifications
     "model_names": [
-        "resnet50",
         "resnet152",
         "densenet161",
+        "vgg16",
         "vit_b_16",
         "swin_v2_t"
     ],
