@@ -266,7 +266,7 @@ class CIFAR100Dataset(Dataset):
 
     def __init__(self, paths, labels, transform_type, augmented_data):
         """
-        Initializes the HyperKvasirDataset instance.
+        Initializes the CIFAR100Dataset instance.
 
         Args:
             paths (list): List of file paths to the images.
@@ -352,7 +352,7 @@ def prepare_data_cifar100(seed, augmented_data, model_explanation, split, batch_
     else:
         img_dir_path = os.path.join(os.getcwd(), "res/cifar-100-python")
 
-    # File handling for HyperKvasir data
+    # File handling for CIFAR-100 data
     paths = []
     labels = []
 
