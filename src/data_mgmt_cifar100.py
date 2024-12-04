@@ -353,8 +353,12 @@ def prepare_data_cifar100(seed, augmented_data, model_explanation, split, batch_
         img_dir_path = os.path.join(os.getcwd(), "res/cifar-100-python")
 
     # File handling for CIFAR-100 data
-    paths = []
-    labels = []
+    all_paths = []
+    all_labels = []
+    train_val_paths = []
+    test_paths = []
+    train_val_labels = []
+    test_labels = []
 
     if augmented_data:
         file = open(os.path.join(csv_file_path, "image-labels.csv"), "r")
@@ -376,26 +380,29 @@ def prepare_data_cifar100(seed, augmented_data, model_explanation, split, batch_
         enumerated_label = LABEL_TO_INDEX[fine_label]
 
         # Add image and label to stored paths and labels
-        paths.append(path_to_img_file)
-        labels.append(enumerated_label)
-
+        all_paths.append(path_to_img_file)
+        all_labels.append(enumerated_label)
+        if set_type == "cifar-100_train":
+            train_val_paths.append(path_to_img_file)
+            train_val_labels.append(enumerated_label)
+        elif set_type == "cifar-100_test":
+            test_paths.append(path_to_img_file)
+            test_labels.append(enumerated_label)
+        else:
+            raise ValueError(f"Invalid set type value in csv file (recieved: {set_type})")
+        
     file.close()
 
     # If not splitting data in sets, Dataset and DataLoader objects are created and returned containing all images in the dataset (used for creating CAMs)
     if not split:
 
-        complete_dataset = CIFAR100Dataset(paths, labels, transform_type="eval", augmented_data=False)
+        complete_dataset = CIFAR100Dataset(all_paths, all_labels, transform_type="eval", augmented_data=False)
         complete_dataloader = DataLoader(complete_dataset, batch_size=batch_size, shuffle=False)
         
         return complete_dataset, complete_dataloader
 
-    # Performing split of dataset
-
-    # First splitting test set and the rest
-    temp_paths, test_paths, temp_labels, test_labels = train_test_split(paths, labels, test_size=params["test_size"], stratify=labels if params["stratify"] else None, random_state=seed)
-
-    # Then splitting training and validation sets
-    train_paths, val_paths, train_labels, val_labels = train_test_split(temp_paths, temp_labels, test_size=params["val_size"], stratify=temp_labels if params["stratify"] else None, random_state=seed)
+    # Performing split of training and validation sets
+    train_paths, val_paths, train_labels, val_labels = train_test_split(train_val_paths, train_val_labels, test_size=params["val_size"], stratify=train_val_labels if params["stratify"] else None, random_state=seed)
 
     # Asserting that sets are disjoint
     assert set(train_paths).isdisjoint(set(val_paths))
