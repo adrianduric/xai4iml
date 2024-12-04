@@ -1,7 +1,7 @@
 # Imported modules
 from config import params
 from init_models import init_model
-from data_mgmt import prepare_data
+from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 
 import os
 import torch
@@ -39,6 +39,92 @@ def get_last_non_classification_layer(model):
     else:
         raise ValueError("Unsupported model architecture!")
 
+def create_cam(model_name, load_models):
+    
+    # Initializing model
+    model = init_model(
+        model_name=model_name,
+        augmented_data=False,
+        load_models=load_models,
+        num_extra_channels=None
+    )
+    model = model.to(params["device"])
+
+    # Initializing dataset
+    _, complete_dataloader = prepare_data_hyperkvasir(
+        seed=None,
+        augmented_data=False,
+        model_explanation=None,
+        split=False,
+        batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+    )
+
+    model.eval()
+
+    # Getting last non-classification layer to create CAM with
+    target_layers = [get_last_non_classification_layer(model=model)]
+
+    # Defining reshape_transform for ViT
+    def reshape_transform_vit(tensor, height=14, width=14):
+        result = tensor[:, 1 :  , :].reshape(tensor.size(0),
+            height, width, tensor.size(2))
+
+        # Bring the channels to the first dimension,
+        # like in CNNs.
+        result = result.transpose(2, 3).transpose(1, 2)
+        return result
+    
+    # Defining reshape_transform for Swin and Swin_V2
+    def reshape_transform_swin(tensor, height=7, width=7):
+        # Bring the channels to the first dimension,
+        # like in CNNs.
+        result = tensor.transpose(2, 3).transpose(1, 2)
+        return result
+
+    # Choosing reshape_transform
+    if isinstance(model, models.VisionTransformer):
+        transform = reshape_transform_vit
+
+    elif isinstance(model, models.SwinTransformer):
+        transform = reshape_transform_swin
+    else:
+        transform = None
+
+    # Initialize Grad-CAM
+    cam = GradCAM(model=model, target_layers=target_layers, reshape_transform=transform)
+
+    print("Creating CAM explanations for all images...")
+
+    for X, y, paths, idxs in tqdm(complete_dataloader):
+
+        # Loading batch to device
+        X = X.to(params["device"])
+        y = y.to(params["device"])
+
+        if params["num_classes"] > 2:
+            targets = [ClassifierOutputTarget(label) for label in y]
+        else:
+            targets = [BinaryClassifierOutputTarget(label) for label in y]
+
+        grayscale_cam = cam(input_tensor=X, targets=targets)
+
+        # Append CAM to original image as additional channel
+        cam_tensor = torch.tensor(grayscale_cam).to(params["device"]).unsqueeze(dim=1)
+        X_with_cam = torch.cat((X, cam_tensor), dim=1)
+
+        # Saving each image tensor to a separate file
+        for i in range(X.shape[0]):
+            
+            image_sample = X_with_cam[i].clone()
+
+            # Changing original file path to separate folder for augmented images
+            new_path = paths[i].replace("/hyper-kvasir", f"/augmented_images/hyper-kvasir/{model_name}")
+
+            # Changing file format to indicate PyTorch tensor, not RGB image
+            new_path = new_path.replace(".jpg", ".pt")
+
+            os.makedirs(os.path.dirname(new_path), exist_ok=True)
+            torch.save(image_sample, new_path)
 
 def create_all_cams(load_models):
     """
@@ -55,90 +141,7 @@ def create_all_cams(load_models):
     # Making CAMS from each model
     for model_name in model_names:
 
-        # Initializing model
-        model = init_model(
-            model_name=model_name,
-            augmented_data=False,
-            load_models=load_models,
-            num_extra_channels=None
-        )
-        model = model.to(params["device"])
-
-        # Initializing dataset
-        _, complete_dataloader = prepare_data(
-            seed=None,
-            augmented_data=False,
-            model_explanation=None,
-            split=False,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
-        )
-
-        model.eval()
-
-        # Getting last non-classification layer to create CAM with
-        target_layers = [get_last_non_classification_layer(model=model)]
-
-        # Defining reshape_transform for ViT
-        def reshape_transform_vit(tensor, height=14, width=14):
-            result = tensor[:, 1 :  , :].reshape(tensor.size(0),
-                height, width, tensor.size(2))
-
-            # Bring the channels to the first dimension,
-            # like in CNNs.
-            result = result.transpose(2, 3).transpose(1, 2)
-            return result
-        
-        # Defining reshape_transform for Swin and Swin_V2
-        def reshape_transform_swin(tensor, height=7, width=7):
-            # Bring the channels to the first dimension,
-            # like in CNNs.
-            result = tensor.transpose(2, 3).transpose(1, 2)
-            return result
-
-        # Choosing reshape_transform
-        if isinstance(model, models.VisionTransformer):
-            transform = reshape_transform_vit
-
-        elif isinstance(model, models.SwinTransformer):
-            transform = reshape_transform_swin
-        else:
-            transform = None
-
-        # Initialize Grad-CAM
-        cam = GradCAM(model=model, target_layers=target_layers, reshape_transform=transform)
-
-        print("Creating CAM explanations for all images...")
-
-        for X, y, paths, idxs in tqdm(complete_dataloader):
-
-            # Loading batch to device
-            X = X.to(params["device"])
-            y = y.to(params["device"])
-
-            if params["num_classes"] > 2:
-                targets = [ClassifierOutputTarget(label) for label in y]
-            else:
-                targets = [BinaryClassifierOutputTarget(label) for label in y]
-
-            grayscale_cam = cam(input_tensor=X, targets=targets)
-
-            # Append CAM to original image as additional channel
-            cam_tensor = torch.tensor(grayscale_cam).to(params["device"]).unsqueeze(dim=1)
-            X_with_cam = torch.cat((X, cam_tensor), dim=1)
-
-            # Saving each image tensor to a separate file
-            for i in range(X.shape[0]):
-                
-                image_sample = X_with_cam[i].clone()
-
-                # Changing original file path to separate folder for augmented images
-                new_path = paths[i].replace("/hyper-kvasir", f"/augmented_images/hyper-kvasir/{model_name}")
-
-                # Changing file format to indicate PyTorch tensor, not RGB image
-                new_path = new_path.replace(".jpg", ".pt")
-
-                os.makedirs(os.path.dirname(new_path), exist_ok=True)
-                torch.save(image_sample, new_path)
+        create_cam(model_name=model_name, load_models=load_models)
 
     print("CAMs complete.")
 

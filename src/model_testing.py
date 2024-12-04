@@ -1,9 +1,10 @@
 # Imported modules
 from config import params
-from data_mgmt import prepare_data
+from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 from init_models import init_model
 from model_training import test_one_epoch, train_model
 from compute_metrics import update_metrics, compute_metrics
+from create_explanation import create_cam
 
 import os
 import datetime
@@ -88,12 +89,36 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
     for run in range(num_runs):
         print(f"Run {run + 1}/{num_runs}")
 
-        # Initializing model for this run
+        # Training teacher model if testing models on XAug data 
+        if augmented_data:
+
+            # Initializing teacher model for this run
+            teacher_model = init_model(model_name=model_name, augmented_data=False, load_models=False, num_extra_channels=1)
+            teacher_model = teacher_model.to(params["device"])
+
+            # Initializing non-augmented dataset for training teacher model
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=None, split=True)
+
+            # Performing training of teacher model
+            train_metrics, val_metrics = train_model(
+                seed=None,
+                model=model,
+                model_name=model_name,
+                train_dataloader=train_dataloader,
+                val_dataloader=val_dataloader,
+                augmented_data=False,
+                save_model=True
+            )
+
+            # Generating explanations from teacher model
+            create_cam(model_name=model_name, load_models=True)
+
+        # Initializing model to be tested for this run (student model if using XAug data)
         model = init_model(model_name=model_name, augmented_data=augmented_data, load_models=False, num_extra_channels=1)
         model = model.to(params["device"])
         
         # Initializing dataset for this run
-        train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+        train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
         # Performing model training for this run
         train_metrics, val_metrics = train_model(
@@ -193,7 +218,7 @@ def test_ensemble(augmented_data, num_runs, explanation_type=None, peer_model_na
             model = model.to(params["device"])
             
             # Initializing dataset for this run
-            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
             # Performing model training for this run
             train_metrics, val_metrics = train_model(

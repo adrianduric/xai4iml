@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
 
+
 # Dictionary for enumerating categories (0-indexed)
 LABEL_TO_INDEX = {
     "cecum": 0,
@@ -155,7 +156,7 @@ class HyperKvasirDataset(Dataset):
         return image, label, path, idx
 
 
-def prepare_data(seed, augmented_data, model_explanation, split, batch_size=params["batch_size"]):
+def prepare_data_hyperkvasir(seed, augmented_data, model_explanation, split, batch_size=params["batch_size"]):
     """
     Processes the HyperKvasir dataset to return PyTorch Dataset and DataLoader objects.
 

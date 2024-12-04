@@ -12,7 +12,7 @@ params = {
     "train_size": 0.7,
     "val_size": 0.15,
     "test_size": 0.15,
-    "stratify": False,
+    "stratify": True,
 
     # Model specifications
     "model_names": [

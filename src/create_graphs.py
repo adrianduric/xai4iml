@@ -6,11 +6,12 @@ import datetime
 import matplotlib.pyplot as plt
 
 
-def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
+def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_metrics):
     """
     Creates and saves graphs for various metrics calculated on the training and validation sets.
     
     Args:
+        dataset_name (str): The name of the dataset on which training and inference are performed.
         model_name (str): The name of the model for which the graphs are being created.
         augmented_data (bool): Flag indicating whether the data is augmented.
         train_metrics (list): List containing dictionaries (one per epoch) with keys being names of various metrics, 
@@ -64,7 +65,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/accuracy.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/accuracy.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()
@@ -95,7 +96,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/precision.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/precision.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()
@@ -126,7 +127,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/recall.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/recall.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()
@@ -157,7 +158,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/f1_score.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/f1_score.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()
@@ -178,7 +179,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/mcc.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/mcc.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()
@@ -199,7 +200,7 @@ def create_graphs(model_name, augmented_data, train_metrics, val_metrics):
     plt.ylabel("Value")
     plt.legend()
 
-    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{model_name}/{augmented_data_string}/{formatted_date}/avg_loss.png")
+    plot_save_path = os.path.join(os.getcwd(), f"doc/graphs/{dataset_name}/{model_name}/{augmented_data_string}/{formatted_date}/avg_loss.png")
     os.makedirs(os.path.dirname(plot_save_path), exist_ok=True)
     plt.savefig(plot_save_path)
     plt.clf()

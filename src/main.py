@@ -1,7 +1,7 @@
 # Imported modules
 from config import params
 from init_models import init_model
-from data_mgmt import prepare_data
+from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 from model_training import train_model
 from model_testing import test_model, test_ensemble
 from create_explanation import create_all_cams, create_average_cam, concat_all_cams
@@ -57,7 +57,7 @@ def run(
         model = model.to(params["device"])
         
         # Initializing dataset
-        _, _, _, train_dataloader, val_dataloader, _ = prepare_data(
+        _, _, _, train_dataloader, val_dataloader, _ = prepare_data_hyperkvasir(
             seed=seed,
             augmented_data=augmented_data,
             model_explanation=model_explanation,
@@ -120,4 +120,5 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(model_name="densenet161", train_models=True, create_cams=True)
+    run(model_name="densenet161", train_models=True)
+    run(model_name="densenet161", create_cams=True, load_models=True)
