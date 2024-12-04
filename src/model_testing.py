@@ -97,12 +97,12 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
             teacher_model = teacher_model.to(params["device"])
 
             # Initializing non-augmented dataset for training teacher model
-            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=None, split=True)
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
 
             # Performing training of teacher model
             train_metrics, val_metrics = train_model(
                 seed=None,
-                model=model,
+                model=teacher_model,
                 model_name=model_name,
                 train_dataloader=train_dataloader,
                 val_dataloader=val_dataloader,

@@ -120,5 +120,4 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(model_name="densenet161", train_models=True)
-    run(model_name="densenet161", create_cams=True, load_models=True)
+    run(model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
