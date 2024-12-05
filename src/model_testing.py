@@ -243,8 +243,6 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
 
             else:
                 raise ValueError(f"Invalid dataset (received: {dataset_name})")
-            
-            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
             # Performing model training for this run
             train_metrics, val_metrics = train_model(

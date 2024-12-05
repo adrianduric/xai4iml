@@ -115,6 +115,7 @@ def run(
     if test_models:
 
         test_model(
+            dataset_name=dataset_name,
             model_name=model_name,
             augmented_data=augmented_data,
             num_runs=num_runs,
@@ -126,6 +127,7 @@ def run(
     if test_model_ensemble:
         
         test_ensemble(
+            dataset_name=dataset_name,
             augmented_data=augmented_data,
             num_runs=num_runs,
             explanation_type=explanation_type,
@@ -133,4 +135,4 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(dataset_name="cifar-100", model_name="resnet152", train_models=True)
+    run(dataset_name="cifar-100", model_name="resnet152", test_models=True)
