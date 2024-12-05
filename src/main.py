@@ -2,7 +2,7 @@
 from config import params
 from init_models import init_model
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
-from data_mgmt_cifar import prepare_data_cifar100
+from data_mgmt_cifar import prepare_data_cifar
 from model_training import train_model
 from model_testing import test_model, test_ensemble
 from create_explanation import create_all_cams, create_average_cam, concat_all_cams
@@ -69,11 +69,20 @@ def run(
                 split=True
             )
         elif dataset_name == "cifar-100-python":
-            _, _, _, train_dataloader, val_dataloader, _ = prepare_data_cifar100(
+            _, _, _, train_dataloader, val_dataloader, _ = prepare_data_cifar(
                 seed=seed,
                 augmented_data=augmented_data,
                 model_explanation=model_explanation,
-                split=True
+                split=True,
+                cifar_version=100
+            )
+        elif dataset_name == "cifar-10-python":
+            _, _, _, train_dataloader, val_dataloader, _ = prepare_data_cifar(
+                seed=seed,
+                augmented_data=augmented_data,
+                model_explanation=model_explanation,
+                split=True,
+                cifar_version=10
             )
         else:
             raise ValueError(f"Invalid dataset (received: {dataset_name})")
@@ -135,13 +144,13 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(dataset_name="cifar-100-python", model_name="resnet152", train_models=True)
-    run(dataset_name="cifar-100-python", model_name="densenet161", train_models=True)
-    run(dataset_name="cifar-100-python", model_name="vgg16", train_models=True)
-    run(dataset_name="cifar-100-python", model_name="vit_b_16", train_models=True)
-    run(dataset_name="cifar-100-python", model_name="swin_v2_t", train_models=True)
+    run(dataset_name="cifar-10-python", model_name="resnet152", train_models=True)
+    run(dataset_name="cifar-10-python", model_name="densenet161", train_models=True)
+    run(dataset_name="cifar-10-python", model_name="vgg16", train_models=True)
+    run(dataset_name="cifar-10-python", model_name="vit_b_16", train_models=True)
+    run(dataset_name="cifar-10-python", model_name="swin_v2_t", train_models=True)
 
-    run(dataset_name="cifar-100-python", create_cams=True)
+    run(dataset_name="cifar-10-python", create_cams=True)
 
     run(dataset_name="cifar-100-python", model_name="resnet152", train_models=True, augmented_data=True)
     run(dataset_name="cifar-100-python", model_name="densenet161", train_models=True, augmented_data=True)
