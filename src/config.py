@@ -6,7 +6,7 @@ params = {
     "seed": 77,
     "device": "cuda" if torch.cuda.is_available() else "cpu",
     "num_classes": 10,
-    "epochs": 20,
+    "epochs": 50,
 
     # Dataset and DataLoader parameters
     "train_size": 0.7,

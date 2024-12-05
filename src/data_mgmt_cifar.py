@@ -443,7 +443,7 @@ def prepare_data_cifar(seed, augmented_data, model_explanation, split, cifar_ver
     # If not splitting data in sets, Dataset and DataLoader objects are created and returned containing all images in the dataset (used for creating CAMs)
     if not split:
         
-        complete_dataset = CIFARDataset(all_paths, all_labels, transform_type="eval", augmented_data=False, cifar_version=cifar_version)
+        complete_dataset = CIFARDataset(all_paths, all_labels, transform_type="eval", augmented_data=False)
         complete_dataloader = DataLoader(complete_dataset, batch_size=batch_size, shuffle=False)
 
         return complete_dataset, complete_dataloader
