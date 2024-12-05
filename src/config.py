@@ -5,7 +5,7 @@ import torch
 params = {
     "seed": 77,
     "device": "cuda" if torch.cuda.is_available() else "cpu",
-    "num_classes": 100,
+    "num_classes": 10,
     "epochs": 20,
 
     # Dataset and DataLoader parameters
@@ -24,7 +24,7 @@ params = {
     ],
 
     # Hyperparameters
-    "batch_size": 16,
+    "batch_size": 128,
     "lr": 1e-4,
     "momentum": 0.9
 }

@@ -463,9 +463,9 @@ def prepare_data_cifar(seed, augmented_data, model_explanation, split, cifar_ver
     assert set(val_paths).isdisjoint(set(test_paths))
 
     # Creating Datasets and DataLoaders
-    train_dataset = CIFARDataset(train_paths, train_labels, transform_type="train", augmented_data=augmented_data, cifar_version=cifar_version)
-    val_dataset = CIFARDataset(val_paths, val_labels, transform_type="eval", augmented_data=augmented_data, cifar_version=cifar_version)
-    test_dataset = CIFARDataset(test_paths, test_labels, transform_type="eval", augmented_data=augmented_data, cifar_version=cifar_version)
+    train_dataset = CIFARDataset(train_paths, train_labels, transform_type="train", augmented_data=augmented_data)
+    val_dataset = CIFARDataset(val_paths, val_labels, transform_type="eval", augmented_data=augmented_data)
+    test_dataset = CIFARDataset(test_paths, test_labels, transform_type="eval", augmented_data=augmented_data)
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
