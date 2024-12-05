@@ -35,6 +35,8 @@ def train_one_epoch(dataloader, model, loss_fn, optimizer):
         # Loading batch to device
         X = X.to(params["device"])
         y = y.to(params["device"])
+        print(X.shape)
+        print(y.shape)
             
         # Forward pass and loss calculation
         preds = torch.squeeze(model(X))
