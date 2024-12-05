@@ -1,7 +1,7 @@
 # Imported modules
 from config import params
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
-from data_mgmt_cifar100 import prepare_data_cifar100
+from data_mgmt_cifar import prepare_data_cifar
 from init_models import init_model
 from model_training import test_one_epoch, train_model
 from compute_metrics import update_metrics, compute_metrics
@@ -107,10 +107,10 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             # Initializing non-augmented dataset for training teacher model
             if dataset_name == "hyper-kvasir":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
-
             elif dataset_name == "cifar-100-python":
-                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=False, model_explanation=None, split=True)
-
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=None, augmented_data=False, model_explanation=None, split=True, cifar_version=100)
+            elif dataset_name == "cifar-10-python":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=None, augmented_data=False, model_explanation=None, split=True, cifar_version=10)
             else:
                 raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
@@ -142,10 +142,10 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         # Initializing dataset for this run
         if dataset_name == "hyper-kvasir":
             train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
-
         elif dataset_name == "cifar-100-python":
-            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
-
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True, cifar_version=100)
+        elif dataset_name == "cifar-10-python":
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True, cifar_version=10)
         else:
             raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
@@ -257,10 +257,10 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
             # Initializing dataset for this run
             if dataset_name == "hyper-kvasir":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
-
             elif dataset_name == "cifar-100-python":
-                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
-
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True, cifar_version=100)
+            elif dataset_name == "cifar-10-python":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True, cifar_version=10)
             else:
                 raise ValueError(f"Invalid dataset (received: {dataset_name})")
 

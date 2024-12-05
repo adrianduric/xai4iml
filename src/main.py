@@ -2,7 +2,7 @@
 from config import params
 from init_models import init_model
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
-from data_mgmt_cifar100 import prepare_data_cifar100
+from data_mgmt_cifar import prepare_data_cifar100
 from model_training import train_model
 from model_testing import test_model, test_ensemble
 from create_explanation import create_all_cams, create_average_cam, concat_all_cams

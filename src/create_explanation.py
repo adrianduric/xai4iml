@@ -2,6 +2,7 @@
 from config import params
 from init_models import init_model
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
+from data_mgmt_cifar import prepare_data_cifar
 
 import os
 import torch
@@ -73,11 +74,21 @@ def create_cam(dataset_name, model_name):
             batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     elif dataset_name == "cifar-100-python":
-        _, complete_dataloader = prepare_data_hyperkvasir(
+        _, complete_dataloader = prepare_data_cifar(
             seed=None,
             augmented_data=False,
             model_explanation=None,
             split=False,
+            cifar_version=100,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    elif dataset_name == "cifar-10-python":
+        _, complete_dataloader = prepare_data_cifar(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            cifar_version=10,
             batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     else:
