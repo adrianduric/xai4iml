@@ -96,6 +96,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
 
             # Initializing teacher model for this run
             teacher_model = init_model(
+                dataset_name=dataset_name,
                 model_name=model_name,
                 augmented_data=False,
                 load_models=False,
