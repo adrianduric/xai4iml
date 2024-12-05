@@ -95,7 +95,12 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         if augmented_data:
 
             # Initializing teacher model for this run
-            teacher_model = init_model(model_name=model_name, augmented_data=False, load_models=False, num_extra_channels=1)
+            teacher_model = init_model(
+                model_name=model_name,
+                augmented_data=False,
+                load_models=False,
+                num_extra_channels=1
+            )
             teacher_model = teacher_model.to(params["device"])
 
             # Initializing non-augmented dataset for training teacher model
@@ -123,7 +128,13 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             create_cam(dataset_name=dataset_name, model_name=model_name)
 
         # Initializing model to be tested for this run (student model if using XAug data)
-        model = init_model(model_name=model_name, augmented_data=augmented_data, load_models=False, num_extra_channels=1)
+        model = init_model(
+            dataset_name=dataset_name,
+            model_name=model_name,
+            augmented_data=augmented_data,
+            load_models=False,
+            num_extra_channels=1
+        )
         model = model.to(params["device"])
         
         # Initializing dataset for this run
@@ -231,7 +242,13 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
                 raise ValueError(f"Invalid explanation type (received: {explanation_type}).")
 
             # Initializing model for this run
-            model = init_model(model_name=model_name, augmented_data=augmented_data, load_models=False, num_extra_channels=1)
+            model = init_model(
+                dataset_name=dataset_name,
+                model_name=model_name,
+                augmented_data=augmented_data,
+                load_models=False,
+                num_extra_channels=1
+            )
             model = model.to(params["device"])
             
             # Initializing dataset for this run

@@ -54,6 +54,7 @@ def create_cam(dataset_name, model_name):
     
     # Initializing model
     model = init_model(
+        dataset_name=dataset_name,
         model_name=model_name,
         augmented_data=False,
         load_models=True,
