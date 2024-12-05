@@ -68,7 +68,7 @@ def run(
                 model_explanation=model_explanation,
                 split=True
             )
-        elif dataset_name == "cifar-100":
+        elif dataset_name == "cifar-100-python":
             _, _, _, train_dataloader, val_dataloader, _ = prepare_data_cifar100(
                 seed=seed,
                 augmented_data=augmented_data,
@@ -135,8 +135,8 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(dataset_name="cifar-100", model_name="resnet152", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-100", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-100", model_name="vgg16", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-100", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-100", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100-python", model_name="resnet152", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100-python", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100-python", model_name="vgg16", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100-python", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="cifar-100-python", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="self")

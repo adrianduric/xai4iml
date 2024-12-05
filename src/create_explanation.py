@@ -45,7 +45,7 @@ def create_cam(dataset_name, model_name):
     The CAMs are appended to the original images as an additional channel and saved as tensors.
 
     Args:
-        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100-python").
         model_name (str): The name of the model to be used for generating Grad-CAM activation maps.
 
     Raises:
@@ -72,7 +72,7 @@ def create_cam(dataset_name, model_name):
             split=False,
             batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
-    elif dataset_name == "cifar-100":
+    elif dataset_name == "cifar-100-python":
         _, complete_dataloader = prepare_data_hyperkvasir(
             seed=None,
             augmented_data=False,
@@ -155,7 +155,7 @@ def create_all_cams(dataset_name):
     The CAMs are appended to the original images as an additional channel and saved as tensors.
 
     Args:
-        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100-python").
     """
 
     # Names of all models to be included
@@ -173,7 +173,7 @@ def create_average_cam(dataset_name):
     Averages over all created Grad-CAM activation maps to generate an average Grad-CAM for each image in the specified dataset and saves the results.
 
     Args:
-        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100-python").
     """
 
     # Names of all models to be included
@@ -198,7 +198,7 @@ def create_average_cam(dataset_name):
                     organ, classification, finding, img_filename
                 )
 
-            elif dataset_name == "cifar-100":
+            elif dataset_name == "cifar-100-python":
                 set_type, coarse_label, fine_label, file_name = line.strip().split(",")
 
                 file_name += ".pt"
@@ -254,7 +254,7 @@ def concat_all_cams(dataset_name):
     Concatenates all created Grad-CAMs for the specified dataset with the original RGB channels for each image and saves the results.
 
     Args:
-        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100-python").
     """
 
     # Names of all models to be included
@@ -279,7 +279,7 @@ def concat_all_cams(dataset_name):
                     organ, classification, finding, img_filename
                 )
 
-            elif dataset_name == "cifar-100":
+            elif dataset_name == "cifar-100-python":
                 set_type, coarse_label, fine_label, file_name = line.strip().split(",")
 
                 file_name += ".pt"

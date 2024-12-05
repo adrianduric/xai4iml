@@ -60,7 +60,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
     Run the test for a specific dataset and model multiple times, compute average metrics and their confidence intervals.
 
     Args:
-        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100-python").
         model_name (str): The name of the model to be tested.
         augmented_data (bool): Whether the data is augmented or not.
         num_runs (int): The number of times to run the test.
@@ -108,7 +108,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             if dataset_name == "hyper-kvasir":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
 
-            elif dataset_name == "cifar-100":
+            elif dataset_name == "cifar-100-python":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=False, model_explanation=None, split=True)
 
             else:
@@ -142,7 +142,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         if dataset_name == "hyper-kvasir":
             train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
-        elif dataset_name == "cifar-100":
+        elif dataset_name == "cifar-100-python":
             train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
         else:
@@ -195,7 +195,7 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
     Test an ensemble of models multiple times, compute average metrics, and their confidence intervals.
 
     Args:
-        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100").
+        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100-python").
         augmented_data (bool): Whether the data is augmented or not.
         num_runs (int): The number of times to run the test.
         explanation_type (str): The type of explanation to be used. Default is None.
@@ -256,7 +256,7 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
             if dataset_name == "hyper-kvasir":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
-            elif dataset_name == "cifar-100":
+            elif dataset_name == "cifar-100-python":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
             else:
