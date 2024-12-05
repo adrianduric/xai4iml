@@ -117,6 +117,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             # Performing training of teacher model
             train_metrics, val_metrics = train_model(
                 seed=None,
+                dataset_name=dataset_name,
                 model=teacher_model,
                 model_name=model_name,
                 train_dataloader=train_dataloader,
@@ -151,6 +152,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         # Performing model training for this run
         train_metrics, val_metrics = train_model(
             seed=None,
+            dataset_name=dataset_name,
             model=model,
             model_name=model_name,
             train_dataloader=train_dataloader,
@@ -265,6 +267,7 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
             # Performing model training for this run
             train_metrics, val_metrics = train_model(
                 seed=None,
+                dataset_name=dataset_name,
                 model=model,
                 model_name=model_name,
                 train_dataloader=train_dataloader,
