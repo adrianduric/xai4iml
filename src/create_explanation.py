@@ -39,27 +39,49 @@ def get_last_non_classification_layer(model):
     else:
         raise ValueError("Unsupported model architecture!")
 
-def create_cam(model_name, load_models):
+def create_cam(dataset_name, model_name):
+    """
+    Generates Grad-CAM activation maps for all images in the specified dataset using a specified model.
+    The CAMs are appended to the original images as an additional channel and saved as tensors.
+
+    Args:
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
+        model_name (str): The name of the model to be used for generating Grad-CAM activation maps.
+
+    Raises:
+        ValueError: If the provided model architecture or dataset name is unsupported.
+    """
     
     # Initializing model
     model = init_model(
         model_name=model_name,
         augmented_data=False,
-        load_models=load_models,
+        load_models=True,
         num_extra_channels=None
     )
     model = model.to(params["device"])
+    model.eval()
 
     # Initializing dataset
-    _, complete_dataloader = prepare_data_hyperkvasir(
-        seed=None,
-        augmented_data=False,
-        model_explanation=None,
-        split=False,
-        batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
-    )
-
-    model.eval()
+    if dataset_name == "hyper-kvasir":
+        _, complete_dataloader = prepare_data_hyperkvasir(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    elif dataset_name == "cifar-100":
+        _, complete_dataloader = prepare_data_hyperkvasir(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    else:
+        raise ValueError(f"Invalid dataset (received: {dataset_name})")
+    
 
     # Getting last non-classification layer to create CAM with
     target_layers = [get_last_non_classification_layer(model=model)]
@@ -118,7 +140,7 @@ def create_cam(model_name, load_models):
             image_sample = X_with_cam[i].clone()
 
             # Changing original file path to separate folder for augmented images
-            new_path = paths[i].replace("/hyper-kvasir", f"/augmented_images/hyper-kvasir/{model_name}")
+            new_path = paths[i].replace(f"/{dataset_name}", f"/augmented_images/{dataset_name}/{model_name}")
 
             # Changing file format to indicate PyTorch tensor, not RGB image
             new_path = new_path.replace(".jpg", ".pt")
@@ -126,13 +148,13 @@ def create_cam(model_name, load_models):
             os.makedirs(os.path.dirname(new_path), exist_ok=True)
             torch.save(image_sample, new_path)
 
-def create_all_cams(load_models):
+def create_all_cams(dataset_name):
     """
-    Creates Grad-CAM activation maps for all images in the dataloader using all specified models.
+    Creates Grad-CAM activation maps for all images in the specified dataset using all models.
     The CAMs are appended to the original images as an additional channel and saved as tensors.
-    
+
     Args:
-        load_models (bool): Flag indicating whether to load saved models from memory or not.
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
     """
 
     # Names of all models to be included
@@ -141,35 +163,52 @@ def create_all_cams(load_models):
     # Making CAMS from each model
     for model_name in model_names:
 
-        create_cam(model_name=model_name, load_models=load_models)
+        create_cam(dataset_name=dataset_name, model_name=model_name)
 
     print("CAMs complete.")
 
-def create_average_cam():
+def create_average_cam(dataset_name):
     """
-    Averages over all created Grad-CAM activation maps to generate an average Grad-CAM for each image and saves the results.
+    Averages over all created Grad-CAM activation maps to generate an average Grad-CAM for each image in the specified dataset and saves the results.
+
+    Args:
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
     """
 
     # Names of all models to be included
     model_names = params["model_names"]
 
     # Iterate over all images
-    csv_file_path = os.path.join(os.getcwd(), "res/augmented_images/hyper-kvasir")
+    csv_file_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}")
 
     with open(os.path.join(csv_file_path, "image-labels.csv"), "r") as file:
         
         file.readline()
 
         for line in file:
+            
+            if dataset_name == "hyper-kvasir":
+                img_filename, organ, finding, classification = line.strip().split(",")
 
-            img_filename, organ, finding, classification = line.strip().split(",")
+                img_filename += ".pt"
+                organ = "lower-gi-tract" if organ == "Lower GI" else "upper-gi-tract"
 
-            img_filename += ".pt"
-            organ = "lower-gi-tract" if organ == "Lower GI" else "upper-gi-tract"
+                relative_file_path = os.path.join(
+                    organ, classification, finding, img_filename
+                )
 
-            relative_file_path = os.path.join(
-                organ, classification, finding, img_filename
-            )
+            elif dataset_name == "cifar-100":
+                set_type, coarse_label, fine_label, file_name = line.strip().split(",")
+
+                file_name += ".pt"
+                set_type = f"cifar-100_{set_type}"
+
+                relative_file_path = os.path.join(
+                    img_dir_path, set_type, coarse_label, fine_label, file_name
+                )
+
+            else:
+                raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
             # List to collect all model explanations for current image
             all_cams = []
@@ -177,7 +216,7 @@ def create_average_cam():
             # Iterate over all model explanations
             for model_name in model_names:
                 
-                img_dir_path = os.path.join(os.getcwd(), f"res/augmented_images/hyper-kvasir/{model_name}")
+                img_dir_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}/{model_name}")
 
                 path_to_img_file = os.path.join(
                     img_dir_path, relative_file_path
@@ -204,21 +243,24 @@ def create_average_cam():
                 assert torch.equal(cam_image[:3], average_cam_image[:3]), "The first 3 channels are not the same"
             
             # Saving average CAM
-            save_path = os.path.join(os.getcwd(), "res/augmented_images/hyper-kvasir/average/", relative_file_path)
+            save_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}/average/", relative_file_path)
                                          
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             torch.save(average_cam_image, save_path)
 
-def concat_all_cams():
+def concat_all_cams(dataset_name):
     """
-    Concatenates all created Grad-CAMs with the original RGB channels for each image and saves the results.
+    Concatenates all created Grad-CAMs for the specified dataset with the original RGB channels for each image and saves the results.
+
+    Args:
+        dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100").
     """
 
     # Names of all models to be included
     model_names = params["model_names"]
     
     # Iterate over all images
-    csv_file_path = os.path.join(os.getcwd(), "res/augmented_images/hyper-kvasir")
+    csv_file_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}")
 
     with open(os.path.join(csv_file_path, "image-labels.csv"), "r") as file:
         
@@ -226,14 +268,28 @@ def concat_all_cams():
 
         for line in file:
 
-            img_filename, organ, finding, classification = line.strip().split(",")
+            if dataset_name == "hyper-kvasir":
+                img_filename, organ, finding, classification = line.strip().split(",")
 
-            img_filename += ".pt"
-            organ = "lower-gi-tract" if organ == "Lower GI" else "upper-gi-tract"
+                img_filename += ".pt"
+                organ = "lower-gi-tract" if organ == "Lower GI" else "upper-gi-tract"
 
-            relative_file_path = os.path.join(
-                organ, classification, finding, img_filename
-            )
+                relative_file_path = os.path.join(
+                    organ, classification, finding, img_filename
+                )
+
+            elif dataset_name == "cifar-100":
+                set_type, coarse_label, fine_label, file_name = line.strip().split(",")
+
+                file_name += ".pt"
+                set_type = f"cifar-100_{set_type}"
+
+                relative_file_path = os.path.join(
+                    img_dir_path, set_type, coarse_label, fine_label, file_name
+                )
+
+            else:
+                raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
             # List to collect all model explanations for current image
             all_cams = []
@@ -241,7 +297,7 @@ def concat_all_cams():
             # Iterate over all model explanations
             for model_name in model_names:
                 
-                img_dir_path = os.path.join(os.getcwd(), f"res/augmented_images/hyper-kvasir/{model_name}")
+                img_dir_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}/{model_name}")
 
                 path_to_img_file = os.path.join(
                     img_dir_path, relative_file_path
@@ -265,7 +321,7 @@ def concat_all_cams():
                 assert torch.equal(cam_image[:3], concatenated_cam_image[:3]), "The first 3 channels are not the same"
             
             # Saving concatenated CAM
-            save_path = os.path.join(os.getcwd(), "res/augmented_images/hyper-kvasir/concatenated/", relative_file_path)
+            save_path = os.path.join(os.getcwd(), f"res/augmented_images/{dataset_name}/concatenated/", relative_file_path)
                                          
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             torch.save(concatenated_cam_image, save_path)

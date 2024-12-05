@@ -1,6 +1,7 @@
 # Imported modules
 from config import params
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
+from data_mgmt_cifar100 import prepare_data_cifar100
 from init_models import init_model
 from model_training import test_one_epoch, train_model
 from compute_metrics import update_metrics, compute_metrics
@@ -54,11 +55,12 @@ def test_model_single_run(model, test_dataloader):
     return test_metrics, total_loss, all_predictions, all_targets
 
 
-def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer_model_name=None):
+def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_type=None, peer_model_name=None):
     """
-    Run the test for a specific model multiple times, compute average metrics and their confidence intervals.
+    Run the test for a specific dataset and model multiple times, compute average metrics and their confidence intervals.
 
     Args:
+        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100").
         model_name (str): The name of the model to be tested.
         augmented_data (bool): Whether the data is augmented or not.
         num_runs (int): The number of times to run the test.
@@ -97,7 +99,14 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
             teacher_model = teacher_model.to(params["device"])
 
             # Initializing non-augmented dataset for training teacher model
-            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
+            if dataset_name == "hyper-kvasir":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
+
+            elif dataset_name == "cifar-100":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=False, model_explanation=None, split=True)
+
+            else:
+                raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
             # Performing training of teacher model
             train_metrics, val_metrics = train_model(
@@ -111,14 +120,21 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
             )
 
             # Generating explanations from teacher model
-            create_cam(model_name=model_name, load_models=True)
+            create_cam(dataset_name=dataset_name, model_name=model_name)
 
         # Initializing model to be tested for this run (student model if using XAug data)
         model = init_model(model_name=model_name, augmented_data=augmented_data, load_models=False, num_extra_channels=1)
         model = model.to(params["device"])
         
         # Initializing dataset for this run
-        train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+        if dataset_name == "hyper-kvasir":
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+
+        elif dataset_name == "cifar-100":
+            train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=None, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+
+        else:
+            raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
         # Performing model training for this run
         train_metrics, val_metrics = train_model(
@@ -153,7 +169,7 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
     formatted_date = current_date.strftime("%Y-%m-%d")
 
     # Saving metrics to text file
-    file_save_path = os.path.join(os.getcwd(), f"doc/result_metrics/{model_name}/{explanation_type if augmented_data else "non-augmented"}/{formatted_date}/test_metrics_{model_name}.txt")
+    file_save_path = os.path.join(os.getcwd(), f"doc/result_metrics/{dataset_name}/{model_name}/{explanation_type if augmented_data else "non-augmented"}/{formatted_date}/test_metrics_{model_name}.txt")
     os.makedirs(os.path.dirname(file_save_path), exist_ok=True)
 
     with open(file_save_path, "w") as text_file:
@@ -162,11 +178,12 @@ def test_model(model_name, augmented_data, num_runs, explanation_type=None, peer
             text_file.write(f"{metric}: mean={mean}, 95% CI=({lower_bound}, {upper_bound})\n")
 
 
-def test_ensemble(augmented_data, num_runs, explanation_type=None, peer_model_name=None):
+def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None, peer_model_name=None):
     """
     Test an ensemble of models multiple times, compute average metrics, and their confidence intervals.
 
     Args:
+        dataset_name (str): The name of the dataset to test with (e.g., "hyper-kvasir", "cifar-100").
         augmented_data (bool): Whether the data is augmented or not.
         num_runs (int): The number of times to run the test.
         explanation_type (str): The type of explanation to be used. Default is None.
@@ -218,6 +235,15 @@ def test_ensemble(augmented_data, num_runs, explanation_type=None, peer_model_na
             model = model.to(params["device"])
             
             # Initializing dataset for this run
+            if dataset_name == "hyper-kvasir":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+
+            elif dataset_name == "cifar-100":
+                train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_cifar100(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
+
+            else:
+                raise ValueError(f"Invalid dataset (received: {dataset_name})")
+            
             train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=run_seed, augmented_data=augmented_data, model_explanation=model_explanation, split=True)
 
             # Performing model training for this run
@@ -278,7 +304,7 @@ def test_ensemble(augmented_data, num_runs, explanation_type=None, peer_model_na
     formatted_date = current_date.strftime("%Y-%m-%d")
 
     # Saving metrics to text file
-    file_save_path = os.path.join(os.getcwd(), f"doc/result_metrics/ensemble/{explanation_type if augmented_data else "non-augmented"}/{formatted_date}/test_metrics_ensemble.txt")
+    file_save_path = os.path.join(os.getcwd(), f"doc/result_metrics/{dataset_name}/ensemble/{explanation_type if augmented_data else "non-augmented"}/{formatted_date}/test_metrics_ensemble.txt")
     os.makedirs(os.path.dirname(file_save_path), exist_ok=True)
 
     with open(file_save_path, "w") as text_file:

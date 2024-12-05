@@ -101,18 +101,15 @@ def run(
 
     # If specified, create CAMs from specified model
     if create_cams:
-
-        create_all_cams(
-            load_models=load_models
-        )
+        create_all_cams(dataset_name=dataset_name)
 
     # Average over all created CAMs to create average CAM if specified
     if average_cams:
-        create_average_cam()
+        create_average_cam(dataset_name=dataset_name)
 
     # Concatenate all created CAMs into one tensor if specified
     if concat_cams:
-        concat_all_cams()
+        concat_all_cams(dataset_name=dataset_name)
 
     # Perform model testing if specified
     if test_models:
