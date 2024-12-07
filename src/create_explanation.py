@@ -80,7 +80,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=100,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     elif dataset_name == "cifar-10-python":
         _, complete_dataloader = prepare_data_cifar(
@@ -89,7 +89,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=10,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     else:
         raise ValueError(f"Invalid dataset (received: {dataset_name})")
