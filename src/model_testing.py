@@ -6,6 +6,7 @@ from init_models import init_model
 from model_training import test_one_epoch, train_model
 from compute_metrics import update_metrics, compute_metrics
 from create_explanation import create_cam
+from create_graphs import create_graphs
 
 import os
 import datetime
@@ -126,6 +127,15 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
                 save_model=True
             )
 
+            # Create graphs of metrics
+            create_graphs(
+                dataset_name=dataset_name,
+                model_name=model_name,
+                augmented_data=False,
+                train_metrics=train_metrics,
+                val_metrics=val_metrics
+            )
+
             # Generating explanations from teacher model
             create_cam(dataset_name=dataset_name, model_name=model_name)
 
@@ -159,6 +169,15 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             val_dataloader=val_dataloader,
             augmented_data=augmented_data,
             save_model=True
+        )
+
+        # Create graphs of metrics
+        create_graphs(
+            dataset_name=dataset_name,
+            model_name=model_name,
+            augmented_data=augmented_data,
+            train_metrics=train_metrics,
+            val_metrics=val_metrics
         )
 
         # Perform model testing for this run
@@ -274,6 +293,15 @@ def test_ensemble(dataset_name, augmented_data, num_runs, explanation_type=None,
                 val_dataloader=val_dataloader,
                 augmented_data=augmented_data,
                 save_model=True
+            )
+
+            # Create graphs of metrics
+            create_graphs(
+                dataset_name=dataset_name,
+                model_name=model_name,
+                augmented_data=augmented_data,
+                train_metrics=train_metrics,
+                val_metrics=val_metrics
             )
 
             # Perform model testing for this run
