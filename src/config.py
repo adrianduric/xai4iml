@@ -24,7 +24,7 @@ params = {
     ],
 
     # Hyperparameters
-    "batch_size": 256,
+    "batch_size": 128,
     "lr": 1e-4,
     "momentum": 0.9
 }
