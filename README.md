@@ -1,4 +1,4 @@
-# XAug - Explanation Augmentation
+# XAI4IML - Explainable Artificial Intelligence for Improved Machine Learning Performance
 
 This repository contains code and other material related to the XAug master's thesis project.
 
