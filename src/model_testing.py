@@ -101,7 +101,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
                 model_name=model_name,
                 augmented_data=False,
                 load_models=False,
-                num_extra_channels=0
+                num_extra_channels=None
             )
             teacher_model = teacher_model.to(params["device"])
 

@@ -134,7 +134,8 @@ def create_cam(dataset_name, model_name):
         # Loading batch to device
         X = X.to(params["device"])
         y = y.to(params["device"])
-
+        
+        preds = torch.squeeze(model(X))
         if params["num_classes"] > 2:
             targets = [ClassifierOutputTarget(label) for label in y]
         else:
