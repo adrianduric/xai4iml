@@ -22,7 +22,7 @@ def run(
         concat_cams=False,
         test_models=False,
         test_model_ensemble=False,
-        num_runs=10,
+        num_runs=5,
         explanation_type=None
     ):
     """
@@ -144,17 +144,5 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(dataset_name="cifar-100-python", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
-
-    run(dataset_name="cifar-10-python", model_name="vit_b_16", train_models=True)
-    run(dataset_name="cifar-10-python", model_name="swin_v2_t", train_models=True)
-
-    run(dataset_name="cifar-10-python", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-10-python", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="self")
-
-
-    run(dataset_name="cifar-100-python", model_name="vit_b_16", train_models=True, augmented_data=True)
-    run(dataset_name="cifar-100-python", model_name="swin_v2_t", train_models=True, augmented_data=True)
+    run(dataset_name="hyper-kvasir", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
     
-    run(dataset_name="cifar-100-python", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="self")
-    run(dataset_name="cifar-100-python", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="self")

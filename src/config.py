@@ -18,13 +18,12 @@ params = {
     "model_names": [
         "resnet152",
         "densenet161",
-        "vgg16",
         "vit_b_16",
         "swin_v2_t"
     ],
 
     # Hyperparameters
-    "batch_size": 128,
+    "batch_size": 32,
     "lr": 1e-4,
     "momentum": 0.9
 }
