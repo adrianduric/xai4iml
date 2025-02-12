@@ -6,14 +6,9 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from torchvision.models import (
-    resnet50, ResNet50_Weights,
     resnet152, ResNet152_Weights,
-    densenet121, DenseNet121_Weights,
     densenet161, DenseNet161_Weights,
-    vgg16, VGG16_Weights,
     vit_b_16, ViT_B_16_Weights,
-    vit_b_32, ViT_B_32_Weights,
-    swin_b, Swin_B_Weights,
     swin_v2_t, Swin_V2_T_Weights
 )
 
@@ -57,17 +52,6 @@ def modify_model_for_n_channels(model, num_extra_channels):
         new_conv0.weight.data = get_new_weights(original_weights)
         model.features.conv0 = new_conv0
 
-    elif isinstance(model, models.VGG):
-        num_filters = model.features[0].out_channels
-        kernel_size = model.features[0].kernel_size
-        stride = model.features[0].stride
-        padding = model.features[0].padding
-
-        new_conv1 = nn.Conv2d(num_channels, num_filters, kernel_size=kernel_size, stride=stride, padding=padding)
-        original_weights = model.features[0].weight.data
-        new_conv1.weight.data = get_new_weights(original_weights)
-        model.features[0] = new_conv1
-
     elif isinstance(model, models.VisionTransformer):
         num_filters = model.conv_proj.out_channels
         kernel_size = model.conv_proj.kernel_size
@@ -109,23 +93,9 @@ def adapt_last_layer(model, num_classes):
             out_features=num_classes if num_classes > 2 else 1,
             bias=True
         )
-    elif isinstance(model, models.VGG) or isinstance(model, models.AlexNet):
-        in_features = model.classifier[-1].in_features
-        model.classifier[-1] = nn.Linear(
-            in_features=in_features,
-            out_features=num_classes if num_classes > 2 else 1,
-            bias=True
-        )
     elif isinstance(model, models.DenseNet):
         in_features = model.classifier.in_features
         model.classifier = nn.Linear(
-            in_features=in_features,
-            out_features=num_classes if num_classes > 2 else 1,
-            bias=True
-        )
-    elif isinstance(model, models.MobileNetV2) or isinstance(model, models.MobileNetV3):
-        in_features = model.classifier[-1].in_features
-        model.classifier[-1] = nn.Linear(
             in_features=in_features,
             out_features=num_classes if num_classes > 2 else 1,
             bias=True
@@ -171,7 +141,6 @@ def init_model(dataset_name, model_name, augmented_data, load_models, num_extra_
     model_dict = {
         "resnet152": lambda: resnet152(weights=ResNet152_Weights.DEFAULT),
         "densenet161": lambda: densenet161(weights=DenseNet161_Weights.DEFAULT),
-        "vgg16": lambda: vgg16(weights=VGG16_Weights.DEFAULT),
         "vit_b_16": lambda: vit_b_16(weights=ViT_B_16_Weights.DEFAULT),
         "swin_v2_t": lambda: swin_v2_t(weights=Swin_V2_T_Weights.DEFAULT)
     }

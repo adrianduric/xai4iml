@@ -27,11 +27,7 @@ def get_last_non_classification_layer(model):
     """
     if isinstance(model, models.ResNet):
         return model.layer4[-1]
-    elif isinstance(model, models.VGG) or isinstance(model, models.AlexNet):
-        return model.features[-1]
     elif isinstance(model, models.DenseNet):
-        return model.features[-1]
-    elif isinstance(model, models.MobileNetV2) or isinstance(model, models.MobileNetV3):
         return model.features[-1]
     elif isinstance(model, models.VisionTransformer):
         return model.encoder.layers[-1].ln_1
@@ -133,13 +129,21 @@ def create_cam(dataset_name, model_name):
 
         # Loading batch to device
         X = X.to(params["device"])
-        y = y.to(params["device"])
+        # y = y.to(params["device"])
         
+        # Making predictions
         preds = torch.squeeze(model(X))
+
+        # Determine target labels based on predictions
+        if params["num_classes"] > 2:  # Multi-class case
+            predicted_labels = torch.argmax(preds, dim=1)
+        else:  # Binary classification case
+            predicted_labels = (preds > 0.5).long()
+
         if params["num_classes"] > 2:
-            targets = [ClassifierOutputTarget(label) for label in y]
+            targets = [ClassifierOutputTarget(pred_label.item()) for pred_label in predicted_labels]
         else:
-            targets = [BinaryClassifierOutputTarget(label) for label in y]
+            targets = [BinaryClassifierOutputTarget(pred_label.item()) for pred_label in predicted_labels]
 
         grayscale_cam = cam(input_tensor=X, targets=targets)
 
@@ -338,3 +342,9 @@ def concat_all_cams(dataset_name):
                                          
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             torch.save(concatenated_cam_image, save_path)
+
+
+# Test program
+if __name__ == "__main__":
+    create_cam("hyper-kvasir", "densenet161")
+

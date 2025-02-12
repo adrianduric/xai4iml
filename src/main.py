@@ -4,7 +4,7 @@ from init_models import init_model
 from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 from data_mgmt_cifar import prepare_data_cifar
 from model_training import train_model
-from model_testing import test_model, test_ensemble
+from model_testing import test_model
 from create_explanation import create_all_cams, create_average_cam, concat_all_cams
 from create_graphs import create_graphs
 
@@ -21,7 +21,6 @@ def run(
         average_cams=False,
         concat_cams=False,
         test_models=False,
-        test_model_ensemble=False,
         num_runs=5,
         explanation_type=None
     ):
@@ -41,7 +40,6 @@ def run(
         average_cams (bool): Flag indicating whether to average multiple Grad-CAMs to create an average Grad-CAM. Default is False.
         concat_cams (bool): Flag indicating whether to concatenate all Grad-CAMs into one tensor. Default is False.
         test_models (bool): Flag indicating whether to test a single model. Default is False.
-        test_model_ensemble (bool): Flag indicating whether to test an ensemble of models. Default is False.
         num_runs (int): Number of runs from which to measure performance metrics and create confidence intervals if model testing is specified. Default is 10.
         explanation_type (str): The type of explanation to be used if model testing is specified. Default is None.
     """
@@ -132,17 +130,8 @@ def run(
             peer_model_name=model_explanation
         )
 
-    # Perform ensemble testing if specified
-    if test_model_ensemble:
-        
-        test_ensemble(
-            dataset_name=dataset_name,
-            augmented_data=augmented_data,
-            num_runs=num_runs,
-            explanation_type=explanation_type,
-            peer_model_name=model_explanation
-        )
-
 if __name__ == "__main__":
     run(dataset_name="hyper-kvasir", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="self")
-    
+    run(dataset_name="hyper-kvasir", model_name="resnet152", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="hyper-kvasir", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="self")
+    run(dataset_name="hyper-kvasir", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="self")

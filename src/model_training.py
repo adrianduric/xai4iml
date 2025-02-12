@@ -161,27 +161,45 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
         momentum=params["momentum"]
     )
 
+    # Setting params for early stopping
+    patience = 5     # Number of epochs with no improvement after which training will be stopped
+    min_delta = 0.001  # Minimum change to be considered as an improvement
+
     # Storing data from runs
     train_metrics = []
     val_metrics = []
 
     print(f"Training model: {model_name}")
 
+    best_loss = float('inf')
+    epochs_without_improvement = 0
+
     # Train model for specified amount of epochs
     for e in range(params["epochs"]):
-        print(f"----------- EPOCH {e+1} -----------")
-        print("Performing training...")
+
+        # Performing training for one epoch
         train_metrics_epoch = train_one_epoch(train_dataloader, model, loss_fn, optimizer)
 
         # Tracking metrics on validation sets during training
-        print("Performing validation...")
-        val_metrics_epoch, total_loss, all_predictions, all_targets = test_one_epoch(val_dataloader, model, loss_fn)
+        val_metrics_epoch, val_loss, all_predictions, all_targets = test_one_epoch(val_dataloader, model, loss_fn)
 
         # Saving metrics and predictions per epoch
         train_metrics.append(train_metrics_epoch)
         val_metrics.append(val_metrics_epoch)
 
-    print("Training complete.\n")
+        # Check for improvement
+        print(f'Epoch {e + 1}/{params["epochs"]}, Validation Loss: {val_loss:.4f}')
+
+        if best_loss - val_loss > min_delta:
+            best_loss = val_loss
+            epochs_without_improvement = 0
+        else:
+            epochs_without_improvement += 1
+
+        # Early stopping condition
+        if epochs_without_improvement >= patience:
+            print('Early stopping!')
+            break
 
     # Save model
     if save_model:

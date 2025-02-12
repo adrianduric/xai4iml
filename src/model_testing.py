@@ -140,14 +140,14 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             create_cam(dataset_name=dataset_name, model_name=model_name)
 
         # Initializing model to be tested for this run (student model if using XAug data)
-        model = init_model(
+        student_model = init_model(
             dataset_name=dataset_name,
             model_name=model_name,
             augmented_data=augmented_data,
             load_models=False,
             num_extra_channels=1
         )
-        model = model.to(params["device"])
+        student_model = student_model.to(params["device"])
         
         # Initializing dataset for this run
         if dataset_name == "hyper-kvasir":
@@ -163,7 +163,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         train_metrics, val_metrics = train_model(
             seed=None,
             dataset_name=dataset_name,
-            model=model,
+            model=student_model,
             model_name=model_name,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
@@ -182,7 +182,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
 
         # Perform model testing for this run
         test_metrics, total_loss, all_predictions, all_targets = test_model_single_run(
-            model=model,
+            model=student_model,
             test_dataloader=test_dataloader
         )
 
