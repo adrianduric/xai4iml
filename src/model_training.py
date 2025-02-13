@@ -162,14 +162,12 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
     )
 
     # Setting params for early stopping
-    patience = 5     # Number of epochs with no improvement after which training will be stopped
+    patience = 2     # Number of epochs with no improvement after which training will be stopped
     min_delta = 0.001  # Minimum change to be considered as an improvement
 
     # Storing data from runs
     train_metrics = []
     val_metrics = []
-
-    print(f"Training model: {model_name}")
 
     best_loss = float('inf')
     epochs_without_improvement = 0

@@ -39,24 +39,27 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
     current_date = datetime.date.today()
     formatted_date = current_date.strftime("%Y-%m-%d")
 
+    # Get number of epochs for this run
+    num_epochs = len(train_metrics)
+
     # Plotting accuracy
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["accuracy_micro"] for metric in train_metrics],
         label="Training (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["accuracy_macro"] for metric in train_metrics],
         label="Training (macro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["accuracy_micro"] for metric in val_metrics],
         label="Validation (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["accuracy_macro"] for metric in val_metrics],
         label="Validation (macro)"
     )
@@ -72,22 +75,22 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
 
     # Plotting precision
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["precision_micro"] for metric in train_metrics], 
         label="Training (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["precision_macro"] for metric in train_metrics], 
         label="Training (macro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["precision_micro"] for metric in val_metrics], 
         label="Validation (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["precision_macro"] for metric in val_metrics], 
         label="Validation (macro)"
     )
@@ -103,22 +106,22 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
 
     # Plotting recall
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["recall_micro"] for metric in train_metrics], 
         label="Training (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["recall_macro"] for metric in train_metrics], 
         label="Training (macro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["recall_micro"] for metric in val_metrics], 
         label="Validation (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["recall_macro"] for metric in val_metrics], 
         label="Validation (macro)"
     )
@@ -134,22 +137,22 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
 
     # Plotting F1 score
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["f1_micro"] for metric in train_metrics], 
         label="Training (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["f1_macro"] for metric in train_metrics], 
         label="Training (macro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["f1_micro"] for metric in val_metrics], 
         label="Validation (micro)"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["f1_macro"] for metric in val_metrics], 
         label="Validation (macro)"
     )
@@ -165,12 +168,12 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
 
     # Plotting MCC
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["mcc"] for metric in train_metrics], 
         label="Training"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["mcc"] for metric in val_metrics], 
         label="Validation"
     )
@@ -186,12 +189,12 @@ def create_graphs(dataset_name, model_name, augmented_data, train_metrics, val_m
 
     # Plotting loss
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["avg_loss"] for metric in train_metrics], 
         label="Training"
     )
     plt.plot(
-        range(params["epochs"]),
+        range(num_epochs),
         [metric["avg_loss"] for metric in val_metrics], 
         label="Validation"
     )
