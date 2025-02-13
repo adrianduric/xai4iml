@@ -162,7 +162,7 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
     )
 
     # Setting params for early stopping
-    patience = 2     # Number of epochs with no improvement after which training will be stopped
+    patience = 5     # Number of epochs with no improvement after which training will be stopped
     min_delta = 0.001  # Minimum change to be considered as an improvement
 
     # Storing data from runs
@@ -170,6 +170,7 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
     val_metrics = []
 
     best_loss = float('inf')
+    best_model_state = None
     epochs_without_improvement = 0
 
     # Train model for specified amount of epochs
@@ -190,6 +191,7 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
 
         if best_loss - val_loss > min_delta:
             best_loss = val_loss
+            best_model_state = model.state_dict()  # Save the current best model state
             epochs_without_improvement = 0
         else:
             epochs_without_improvement += 1
@@ -201,8 +203,12 @@ def train_model(seed, dataset_name, model, model_name, train_dataloader, val_dat
 
     # Save model
     if save_model:
+        
+        # Set save path
         save_path = os.path.join(os.getcwd(), f"res/models/{dataset_name}/{"augmented" if augmented_data else "non-augmented"}/{model_name}")
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        torch.save(model.state_dict(), save_path)
+
+        # Save the best model state
+        torch.save(best_model_state, save_path)
 
     return train_metrics, val_metrics
