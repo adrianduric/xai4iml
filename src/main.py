@@ -5,7 +5,7 @@ from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 from data_mgmt_cifar import prepare_data_cifar
 from model_training import train_model
 from model_testing import test_model
-from create_explanation import create_all_cams, create_average_cam, concat_all_cams
+from create_explanation import create_cam, create_average_cam, concat_all_cams
 from create_graphs import create_graphs
 
 
@@ -108,7 +108,7 @@ def run(
 
     # If specified, create CAMs from specified model
     if create_cams:
-        create_all_cams(dataset_name=dataset_name)
+        create_cam(dataset_name=dataset_name, model_name=model_name)
 
     # Average over all created CAMs to create average CAM if specified
     if average_cams:

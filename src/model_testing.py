@@ -4,14 +4,11 @@ from data_mgmt_hyperkvasir import prepare_data_hyperkvasir
 from data_mgmt_cifar import prepare_data_cifar
 from init_models import init_model
 from model_training import test_one_epoch, train_model
-from compute_metrics import update_metrics, compute_metrics
-from create_explanation import create_cam
+from create_explanation import create_cam, create_ensemble_cams, create_average_cam, concat_all_cams
 from create_graphs import create_graphs
 
 import os
 import datetime
-import random
-import torch
 import torch.nn as nn
 import numpy as np
 import scipy.stats as stats
@@ -95,16 +92,6 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
         # Training teacher model if testing models on XAug data 
         if augmented_data:
 
-            # Initializing teacher model for this run
-            teacher_model = init_model(
-                dataset_name=dataset_name,
-                model_name=model_name,
-                augmented_data=False,
-                load_models=False,
-                num_extra_channels=None
-            )
-            teacher_model = teacher_model.to(params["device"])
-
             # Initializing non-augmented dataset for training teacher model
             if dataset_name == "hyper-kvasir":
                 train_dataset, val_dataset, test_dataset, train_dataloader, val_dataloader, test_dataloader = prepare_data_hyperkvasir(seed=None, augmented_data=False, model_explanation=None, split=True)
@@ -115,29 +102,92 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             else:
                 raise ValueError(f"Invalid dataset (received: {dataset_name})")
 
-            # Performing training of teacher model
-            train_metrics, val_metrics = train_model(
-                seed=None,
-                dataset_name=dataset_name,
-                model=teacher_model,
-                model_name=model_name,
-                train_dataloader=train_dataloader,
-                val_dataloader=val_dataloader,
-                augmented_data=False,
-                save_model=True
-            )
+            # Use one teacher model if self or peer explanation
+            if explanation_type in {"self", "peer"}:
 
-            # Create graphs of metrics
-            create_graphs(
-                dataset_name=dataset_name,
-                model_name=model_name,
-                augmented_data=False,
-                train_metrics=train_metrics,
-                val_metrics=val_metrics
-            )
+                # Initializing teacher model for this run
+                teacher_model = init_model(
+                    dataset_name=dataset_name,
+                    model_name=peer_model_name if explanation_type == "peer" else model_name,
+                    augmented_data=False,
+                    load_models=False,
+                    num_extra_channels=None
+                )
+                teacher_model = teacher_model.to(params["device"])
 
-            # Generating explanations from teacher model
-            create_cam(dataset_name=dataset_name, model_name=model_name)
+                # Performing training of teacher model
+                train_metrics, val_metrics = train_model(
+                    seed=None,
+                    dataset_name=dataset_name,
+                    model=teacher_model,
+                    model_name=model_name,
+                    train_dataloader=train_dataloader,
+                    val_dataloader=val_dataloader,
+                    augmented_data=False,
+                    save_model=True
+                )
+
+                # Create graphs of metrics
+                create_graphs(
+                    dataset_name=dataset_name,
+                    model_name=model_name,
+                    augmented_data=False,
+                    train_metrics=train_metrics,
+                    val_metrics=val_metrics
+                )
+
+                # Generating explanations from teacher model
+                create_cam(dataset_name=dataset_name, model_name=model_name)
+
+            # Use one of each model as teacher if average or multi-explanation
+            elif explanation_type in {"average", "multi"}:
+
+                for ensemble_model_name in params["model_names"]:
+                
+                    # Initializing teacher model for this run
+                    ensemble_teacher_model = init_model(
+                        dataset_name=dataset_name,
+                        model_name=ensemble_model_name,
+                        augmented_data=False,
+                        load_models=False,
+                        num_extra_channels=None
+                    )
+                    ensemble_teacher_model = ensemble_teacher_model.to(params["device"])
+
+                    # Performing training of teacher model
+                    train_metrics, val_metrics = train_model(
+                        seed=None,
+                        dataset_name=dataset_name,
+                        model=ensemble_teacher_model,
+                        model_name=ensemble_model_name,
+                        train_dataloader=train_dataloader,
+                        val_dataloader=val_dataloader,
+                        augmented_data=False,
+                        save_model=True
+                    )
+
+                    # Create graphs of metrics
+                    create_graphs(
+                        dataset_name=dataset_name,
+                        model_name=ensemble_model_name,
+                        augmented_data=False,
+                        train_metrics=train_metrics,
+                        val_metrics=val_metrics
+                    )
+
+                # Generating explanations from teacher models with ensemble prediction label
+                create_ensemble_cams(dataset_name=dataset_name)
+
+                if explanation_type == "average":
+                    create_average_cam(dataset_name=dataset_name)
+                elif explanation_type == "multi":
+                    concat_all_cams(dataset_name=dataset_name)
+                else:
+                    raise ValueError(f"Invalid explanation type (received: {explanation_type}).")
+                
+            else:
+                raise ValueError(f"Invalid explanation type (received: {explanation_type}).")
+
 
         # Initializing model to be tested for this run (student model if using XAug data)
         student_model = init_model(
@@ -145,7 +195,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             model_name=model_name,
             augmented_data=augmented_data,
             load_models=False,
-            num_extra_channels=1
+            num_extra_channels=len(params["model_names"] if explanation_type == "multi" else 1)
         )
         student_model = student_model.to(params["device"])
         

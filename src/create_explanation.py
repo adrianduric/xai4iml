@@ -67,7 +67,7 @@ def create_cam(dataset_name, model_name):
             augmented_data=False,
             model_explanation=None,
             split=False,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     elif dataset_name == "cifar-100-python":
         _, complete_dataloader = prepare_data_cifar(
@@ -76,7 +76,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=100,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     elif dataset_name == "cifar-10-python":
         _, complete_dataloader = prepare_data_cifar(
@@ -85,7 +85,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=10,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_all_cams does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
         )
     else:
         raise ValueError(f"Invalid dataset (received: {dataset_name})")
@@ -165,24 +165,149 @@ def create_cam(dataset_name, model_name):
             os.makedirs(os.path.dirname(new_path), exist_ok=True)
             torch.save(image_sample, new_path)
 
-def create_all_cams(dataset_name):
+def create_ensemble_cams(dataset_name):
     """
     Creates Grad-CAM activation maps for all images in the specified dataset using all models.
+    The chosen label to make Grad-CAM from is the average predicted label of all models.
     The CAMs are appended to the original images as an additional channel and saved as tensors.
 
     Args:
         dataset_name (str): The name of the dataset to process (e.g., "hyper-kvasir", "cifar-100-python").
     """
 
-    # Names of all models to be included
-    model_names = params["model_names"]
+    # Initializing dataset
+    if dataset_name == "hyper-kvasir":
+        _, complete_dataloader = prepare_data_hyperkvasir(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    elif dataset_name == "cifar-100-python":
+        _, complete_dataloader = prepare_data_cifar(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            cifar_version=100,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    elif dataset_name == "cifar-10-python":
+        _, complete_dataloader = prepare_data_cifar(
+            seed=None,
+            augmented_data=False,
+            model_explanation=None,
+            split=False,
+            cifar_version=10,
+            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+        )
+    else:
+        raise ValueError(f"Invalid dataset (received: {dataset_name})")
+    
+    # Defining reshape_transform for ViT
+    def reshape_transform_vit(tensor, height=14, width=14):
+        result = tensor[:, 1 :  , :].reshape(tensor.size(0),
+            height, width, tensor.size(2))
 
-    # Making CAMS from each model
-    for model_name in model_names:
+        # Bring the channels to the first dimension,
+        # like in CNNs.
+        result = result.transpose(2, 3).transpose(1, 2)
+        return result
+    
+    # Defining reshape_transform for Swin and Swin_V2
+    def reshape_transform_swin(tensor, height=7, width=7):
+        # Bring the channels to the first dimension,
+        # like in CNNs.
+        result = tensor.transpose(2, 3).transpose(1, 2)
+        return result
 
-        create_cam(dataset_name=dataset_name, model_name=model_name)
+    # Initializing models and CAM objects
+    models_cams = {} # stores (model, cam) tuples with model_name as key
 
-    print("CAMs complete.")
+    for model_name in params["model_names"]:
+
+        # Initialize each model
+        model = init_model(
+            dataset_name=dataset_name,
+            model_name=model_name,
+            augmented_data=False,
+            load_models=True,
+            num_extra_channels=None
+        )
+        model = model.to(params["device"])
+        model.eval()
+
+        # Getting last non-classification layer to create CAM with
+        target_layers = [get_last_non_classification_layer(model=model)]
+        
+        # Choosing reshape_transform
+        if isinstance(model, models.VisionTransformer):
+            transform = reshape_transform_vit
+
+        elif isinstance(model, models.SwinTransformer):
+            transform = reshape_transform_swin
+        else:
+            transform = None
+
+        # Initialize Grad-CAM object
+        cam = GradCAM(model=model, target_layers=target_layers, reshape_transform=transform)
+
+        models_cams[model_name] = (model, cam)
+
+    for X, y, paths, idxs in tqdm(complete_dataloader):
+
+        # Loading batch to device
+        X = X.to(params["device"])
+
+        # Making predictions with each model
+        all_preds = []
+
+        for model_name in models_cams:
+            model, cam = models_cams[model_name]
+            preds = torch.squeeze(model(X))
+            all_preds.append(preds)
+
+        # Stack the tensors to create new tensor with all predictions
+        stacked_preds = torch.stack(all_preds)
+
+        # Calculate the mean across the first dimension to get the average predictions
+        average_preds = torch.mean(stacked_preds, dim=0)
+
+        # Determine target labels based on predictions
+        if params["num_classes"] > 2:  # Multi-class case
+            predicted_labels = torch.argmax(average_preds, dim=1)
+        else:  # Binary classification case
+            predicted_labels = (preds > 0.5).long()
+
+        if params["num_classes"] > 2:
+            targets = [ClassifierOutputTarget(pred_label.item()) for pred_label in predicted_labels]
+        else:
+            targets = [BinaryClassifierOutputTarget(pred_label.item()) for pred_label in predicted_labels]
+
+        for model_name in models_cams:
+            model, cam = models_cams[model_name]
+
+            #Generate CAM
+            grayscale_cam = cam(input_tensor=X, targets=targets)
+
+            # Append CAM to original image as additional channel
+            cam_tensor = torch.tensor(grayscale_cam).to(params["device"]).unsqueeze(dim=1)
+            X_with_cam = torch.cat((X, cam_tensor), dim=1)
+
+            # Saving each image tensor to a separate file
+            for i in range(X.shape[0]):
+                
+                image_sample = X_with_cam[i].clone()
+
+                # Changing original file path to separate folder for augmented images
+                new_path = paths[i].replace(f"/{dataset_name}", f"/augmented_images/{dataset_name}/{model_name}")
+
+                # Changing file format to indicate PyTorch tensor, not RGB image
+                new_path = new_path.replace(".jpg", ".pt")
+
+                os.makedirs(os.path.dirname(new_path), exist_ok=True)
+                torch.save(image_sample, new_path)
 
 def create_average_cam(dataset_name):
     """
