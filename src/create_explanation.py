@@ -67,7 +67,7 @@ def create_cam(dataset_name, model_name):
             augmented_data=False,
             model_explanation=None,
             split=False,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 8 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=8
         )
     elif dataset_name == "cifar-100-python":
         _, complete_dataloader = prepare_data_cifar(
@@ -76,7 +76,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=100,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=128
         )
     elif dataset_name == "cifar-10-python":
         _, complete_dataloader = prepare_data_cifar(
@@ -85,7 +85,7 @@ def create_cam(dataset_name, model_name):
             model_explanation=None,
             split=False,
             cifar_version=10,
-            batch_size=1 if isinstance(model, models.VisionTransformer) else 128 # To handle issue where create_cam does not work with minibatches for ViT, use batch_size=1 if model is ViT
+            batch_size=128
         )
     else:
         raise ValueError(f"Invalid dataset (received: {dataset_name})")
@@ -471,5 +471,5 @@ def concat_all_cams(dataset_name):
 
 # Test program
 if __name__ == "__main__":
-    create_cam("hyper-kvasir", "densenet161")
+    create_cam("hyper-kvasir", "vit_b_16")
 
