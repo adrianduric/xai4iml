@@ -195,7 +195,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             model_name=model_name,
             augmented_data=augmented_data,
             load_models=False,
-            num_extra_channels=len(params["model_names"] if explanation_type == "multi" else 1)
+            num_extra_channels=len(params["model_names"]) if explanation_type == "multi" else 1
         )
         student_model = student_model.to(params["device"])
         
