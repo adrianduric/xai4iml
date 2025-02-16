@@ -61,8 +61,10 @@ data_transforms = {
         transforms.RandomVerticalFlip(),
         transforms.RandomRotation(90),
         transforms.Normalize(
-            mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 1],
-            std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 1]
+            #mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 1],
+            #std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 1]
+            mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 4],
+            std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 4]
         )
     ]),
     
@@ -82,8 +84,10 @@ data_transforms = {
         transforms.CenterCrop(256),
         transforms.Resize(224),
         transforms.Normalize(
-            mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 1],
-            std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 1]
+            #mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 1],
+            #std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 1]
+            mean=[0.485, 0.456, 0.406, *[np.mean([0.485, 0.456, 0.406]).item()] * 4],
+            std=[0.229, 0.224, 0.225, *[np.mean([0.485, 0.456, 0.406]).item()] * 4]
         )
     ])
 }
