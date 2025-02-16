@@ -142,7 +142,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
             # Use one of each model as teacher if average or multi-explanation
             elif explanation_type in {"average", "multi"}:
 
-                for ensemble_model_name in params["model_names"]:
+                """ for ensemble_model_name in params["model_names"]:
                 
                     # Initializing teacher model for this run
                     ensemble_teacher_model = init_model(
@@ -173,7 +173,7 @@ def test_model(dataset_name, model_name, augmented_data, num_runs, explanation_t
                         augmented_data=False,
                         train_metrics=train_metrics,
                         val_metrics=val_metrics
-                    )
+                    ) """
 
                 # Generating explanations from teacher models with ensemble prediction label
                 create_ensemble_cams(dataset_name=dataset_name)
