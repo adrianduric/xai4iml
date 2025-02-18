@@ -131,7 +131,12 @@ def run(
         )
 
 if __name__ == "__main__":
-    run(dataset_name="hyper-kvasir", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="multi")
+    #run(dataset_name="hyper-kvasir", model_name="swin_v2_t", test_models=True, augmented_data=True, explanation_type="multi")
     run(dataset_name="hyper-kvasir", model_name="vit_b_16", test_models=True, augmented_data=True, explanation_type="multi")
     run(dataset_name="hyper-kvasir", model_name="densenet161", test_models=True, augmented_data=True, explanation_type="multi")
     run(dataset_name="hyper-kvasir", model_name="resnet152", test_models=True, augmented_data=True, explanation_type="multi")
+
+    run(dataset_name="hyper-kvasir", model_name="swin_v2_t", test_models=True)
+    run(dataset_name="hyper-kvasir", model_name="vit_b_16", test_models=True)
+    run(dataset_name="hyper-kvasir", model_name="densenet161", test_models=True)
+    run(dataset_name="hyper-kvasir", model_name="resnet152", test_models=True)
